@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Website Brief — taifur.dev</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #040810;
+      --surface: #0c1525;
+      --s2:      #111e33;
+      --cyan:    #00e5ff;
+      --lime:    #b8ff57;
+      --pink:    #ff5fa0;
+      --white:   #f0f4ff;
+      --muted:   rgba(240,244,255,0.45);
+      --border:  rgba(0,229,255,0.14);
+      --b2:      rgba(240,244,255,0.06);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--white);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* grid bg */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.022) 1px, transparent 1px);
+      background-size: 56px 56px;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 48px;
+      background: rgba(4,8,16,0.8);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.15rem; font-weight: 800;
+      text-decoration: none; letter-spacing: 0.02em;
+    }
+    .topbar-logo span:first-child { color: var(--white); }
+    .topbar-logo span:last-child  { color: var(--cyan); }
+    .topbar-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--muted);
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap {
+      position: fixed; top: 64px; left: 0; right: 0;
+      z-index: 99;
+      background: rgba(4,8,16,0.7);
+      backdrop-filter: blur(10px);
+      padding: 14px 48px;
+      border-bottom: 1px solid var(--b2);
+      display: flex; align-items: center; gap: 20px;
+    }
+    .progress-steps { display: flex; gap: 6px; flex: 1; }
+    .progress-step {
+      flex: 1; height: 3px;
+      background: var(--b2);
+      border-radius: 2px;
+      transition: background 0.35s;
+      position: relative;
+      overflow: hidden;
+    }
+    .progress-step.done { background: var(--cyan); box-shadow: 0 0 8px rgba(0,229,255,0.4); }
+    .progress-step.active { background: linear-gradient(90deg, var(--cyan), var(--lime)); box-shadow: 0 0 10px rgba(0,229,255,0.3); }
+    .progress-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem; color: var(--muted);
+      letter-spacing: 0.1em; white-space: nowrap;
+    }
+    .progress-label span { color: var(--cyan); }
+
+    /* ── WRAPPER ── */
+    .wrapper {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 160px 24px 60px;
+      position: relative; z-index: 2;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%; max-width: 760px;
+      padding: 52px 52px 44px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--cyan), var(--lime), var(--pink));
+    }
+
+    /* step panels */
+    .step { display: none; }
+    .step.active {
+      display: block;
+      animation: stepIn 0.38s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    @keyframes stepIn {
+      from { opacity: 0; transform: translateX(28px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .step-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--cyan);
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .step-eyebrow::before { content: ''; width: 20px; height: 1px; background: var(--cyan); }
+
+    .step-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem; font-weight: 800;
+      line-height: 1.15; letter-spacing: -0.01em;
+      margin-bottom: 8px; color: var(--white);
+    }
+    .step-title em { font-style: normal; color: var(--cyan); }
+
+    .step-sub {
+      font-size: 0.88rem; color: var(--muted);
+      line-height: 1.65; font-weight: 300;
+      margin-bottom: 36px;
+    }
+
+    /* ── CHOICE GRIDS ── */
+    .choice-grid { display: grid; gap: 12px; }
+    .choice-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .choice-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+    .choice {
+      background: var(--s2);
+      border: 1px solid var(--b2);
+      border-radius: 10px;
+      padding: 18px 20px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      position: relative;
+      user-select: none;
+    }
+    .choice:hover { border-color: rgba(0,229,255,0.3); background: rgba(0,229,255,0.04); transform: translateY(-2px); }
+    .choice.selected {
+      border-color: var(--cyan);
+      background: rgba(0,229,255,0.07);
+      box-shadow: 0 0 0 1px var(--cyan), 0 0 20px rgba(0,229,255,0.12);
+    }
+    .choice.selected .choice-check { opacity: 1; }
+
+    .choice-check {
+      position: absolute; top: 12px; right: 12px;
+      width: 20px; height: 20px;
+      background: var(--cyan);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; color: var(--bg);
+      font-weight: 900;
+      opacity: 0; transition: opacity 0.2s;
+    }
+
+    .choice-emoji { font-size: 1.8rem; margin-bottom: 10px; display: block; }
+    .choice-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem; font-weight: 700;
+      color: var(--white); margin-bottom: 4px;
+    }
+    .choice-desc { font-size: 0.76rem; color: var(--muted); line-height: 1.5; }
+
+    /* vibe cards — larger */
+    .vibe-card { padding: 24px 20px; }
+    .vibe-swatch {
+      width: 100%; height: 64px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+    }
+
+    /* ── COLOR PICKER ── */
+    .color-section { margin-bottom: 28px; }
+    .color-section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .color-presets { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .color-preset {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .color-preset:hover { transform: scale(1.15); }
+    .color-preset.selected { border-color: var(--white); transform: scale(1.15); }
+
+    .color-custom-row {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .color-picker-input {
+      width: 44px; height: 44px;
+      border: 1px solid var(--b2);
+      border-radius: 8px;
+      cursor: pointer;
+      background: none;
+      padding: 2px;
+    }
+    .color-hex-display {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem; color: var(--cyan);
+      letter-spacing: 0.1em;
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      min-width: 110px;
+    }
+    .color-label-text { font-size: 0.8rem; color: var(--muted); }
+
+    /* ── TEXT INPUTS ── */
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .field input,
+    .field textarea,
+    .field select {
+      width: 100%;
+      background: var(--s2);
+      border: 1px solid var(--b2);
+      border-radius: 8px;
+      padding: 13px 16px;
+      font-size: 0.88rem; color: var(--white);
+      font-family: 'Outfit', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input::placeholder,
+    .field textarea::placeholder { color: rgba(240,244,255,0.2); }
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus { border-color: var(--cyan); }
+    .field select option { background: #0c1525; }
+    .field textarea { resize: vertical; min-height: 100px; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* ── TOGGLE CHIPS ── */
+    .chip-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .chip {
+      padding: 8px 16px;
+      background: var(--s2);
+      border: 1px solid var(--b2);
+      border-radius: 50px;
+      font-size: 0.78rem; color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .chip:hover { border-color: rgba(0,229,255,0.3); color: var(--white); }
+    .chip.on { border-color: var(--cyan); color: var(--cyan); background: rgba(0,229,255,0.07); }
+
+    /* ── RANGE SLIDER ── */
+    .range-wrap { margin-top: 8px; }
+    .range-labels { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); margin-bottom: 8px; }
+    input[type=range] {
+      width: 100%; height: 4px;
+      -webkit-appearance: none;
+      background: linear-gradient(90deg, var(--cyan) var(--val, 50%), var(--b2) var(--val, 50%));
+      border-radius: 2px; outline: none; cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px rgba(0,229,255,0.5);
+      cursor: pointer;
+    }
+    .range-value {
+      text-align: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem; color: var(--cyan);
+      margin-top: 8px;
+    }
+
+    /* ── BUTTONS ── */
+    .btn-row { display: flex; gap: 12px; margin-top: 36px; }
+    .btn-next {
+      flex: 1;
+      background: var(--cyan);
+      color: var(--bg);
+      border: none;
+      padding: 15px 28px;
+      border-radius: 8px;
+      font-size: 0.84rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      transition: box-shadow 0.2s, transform 0.15s;
+    }
+    .btn-next:hover { box-shadow: 0 0 24px rgba(0,229,255,0.4); transform: translateY(-2px); }
+    .btn-back {
+      background: transparent;
+      border: 1px solid var(--b2);
+      color: var(--muted);
+      padding: 14px 24px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-back:hover { border-color: var(--cyan); color: var(--cyan); }
+
+    /* ── SUMMARY (final step) ── */
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+    .summary-item {
+      background: var(--s2);
+      border: 1px solid var(--b2);
+      border-radius: 8px;
+      padding: 16px 18px;
+    }
+    .summary-key {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .summary-val { font-size: 0.88rem; font-weight: 600; color: var(--white); }
+    .summary-color-dot {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(90deg, var(--cyan), var(--lime));
+      color: var(--bg);
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem; font-weight: 800;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      cursor: pointer;
+      font-family: 'Syne', sans-serif;
+      transition: box-shadow 0.2s, transform 0.15s;
+    }
+    .submit-btn:hover { box-shadow: 0 0 32px rgba(0,229,255,0.35); transform: translateY(-2px); }
+
+    /* ── DONE STATE ── */
+    .done-screen {
+      text-align: center; padding: 20px 0;
+      display: none;
+    }
+    .done-screen.show { display: block; animation: stepIn 0.5s ease forwards; }
+    .done-icon { font-size: 4rem; margin-bottom: 20px; }
+    .done-screen h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem; font-weight: 800;
+      color: var(--white); margin-bottom: 12px;
+    }
+    .done-screen h2 em { font-style: normal; color: var(--cyan); }
+    .done-screen p { font-size: 0.9rem; color: var(--muted); line-height: 1.7; max-width: 420px; margin: 0 auto 28px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 680px) {
+      .topbar { padding: 14px 20px; }
+      .progress-wrap { padding: 12px 20px; }
+      .card { padding: 36px 24px 32px; }
+      .choice-grid.cols-3 { grid-template-columns: 1fr 1fr; }
+      .choice-grid.cols-2 { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .field-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <a href="#" class="topbar-logo"><span>taifur</span><span>.dev</span></a>
+  <div class="topbar-tag">Website Brief Form</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-steps" id="progressSteps"></div>
+  <div class="progress-label">Step <span id="stepCounter">1</span> of 8</div>
+</div>
+
+<!-- MAIN WRAPPER -->
+<div class="wrapper">
+  <div class="card" id="mainCard">
+
+    <!-- ─── STEP 1: Business Info ─── -->
+    <div class="step active" data-step="1">
+      <div class="step-eyebrow">Step 1 — The Basics</div>
+      <h2 class="step-title">Tell me about your <em>business</em>.</h2>
+      <p class="step-sub">Just the essentials to get started. I'll use this to tailor every design decision.</p>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Your Name</label>
+          <input type="text" id="clientName" placeholder="e.g. Jessica Turner"/>
+        </div>
+        <div class="field">
+          <label>Business Name</label>
+          <input type="text" id="bizName" placeholder="e.g. Turner Dental Care"/>
+        </div>
+      </div>
+      <div class="field">
+        <label>Industry / Type of Business</label>
+        <select id="bizType">
+          <option value="">Select your industry</option>
+          <option>Dental / Medical</option>
+          <option>Plumbing / HVAC</option>
+          <option>Roofing / Construction</option>
+          <option>Beauty / Nail Salon</option>
+          <option>Hair Salon / Barbershop</option>
+          <option>Auto / Car Detailing</option>
+          <option>Restaurant / Café</option>
+          <option>Law Firm</option>
+          <option>Real Estate</option>
+          <option>Fitness / Gym</option>
+          <option>Event Planning</option>
+          <option>Retail / E-commerce</option>
+          <option>Photography / Creative</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>City & State</label>
+          <input type="text" id="bizLocation" placeholder="e.g. Chicago, IL"/>
+        </div>
+        <div class="field">
+          <label>Website (if you have one)</label>
+          <input type="text" id="existingSite" placeholder="e.g. myoldsite.com or None"/>
+        </div>
+      </div>
+      <div class="btn-row"><button class="btn-next" onclick="nextStep()">Next →</button></div>
+    </div>
+
+    <!-- ─── STEP 2: Vibe ─── -->
+    <div class="step" data-step="2">
+      <div class="step-eyebrow">Step 2 — The Vibe</div>
+      <h2 class="step-title">What's the overall <em>feel</em>?</h2>
+      <p class="step-sub">Pick the aesthetic that best matches your brand. This shapes everything — layout, fonts, and imagery.</p>
+
+      <div class="choice-grid cols-2">
+        <div class="choice vibe-card" onclick="selectChoice(this,'vibe')">
+          <div class="choice-check">✓</div>
+          <div class="vibe-swatch" style="background:linear-gradient(135deg,#0E2A47,#1A7A8A);"></div>
+          <div class="choice-label">Clean & Professional</div>
+          <div class="choice-desc">Trust-building, corporate-friendly. Great for medical, law, finance.</div>
+        </div>
+        <div class="choice vibe-card" onclick="selectChoice(this,'vibe')">
+          <div class="choice-check">✓</div>
+          <div class="vibe-swatch" style="background:linear-gradient(135deg,#040810,#00e5ff33);"></div>
+          <div class="choice-label">Dark & Futuristic</div>
+          <div class="choice-desc">Bold, techy, and modern. Great for tech, automotive, studios.</div>
+        </div>
+        <div class="choice vibe-card" onclick="selectChoice(this,'vibe')">
+          <div class="choice-check">✓</div>
+          <div class="vibe-swatch" style="background:linear-gradient(135deg,#1A0A2E,#8B2FC9,#FF3D8B);"></div>
+          <div class="choice-label">Luxury & High-End</div>
+          <div class="choice-desc">Elevated, refined, premium feel. Perfect for salons, spas, boutiques.</div>
+        </div>
+        <div class="choice vibe-card" onclick="selectChoice(this,'vibe')">
+          <div class="choice-check">✓</div>
+          <div class="vibe-swatch" style="background:linear-gradient(135deg,#FFF9F0,#F0D080,#E8C068);"></div>
+          <div class="choice-label">Warm & Welcoming</div>
+          <div class="choice-desc">Friendly, approachable, community feel. Great for restaurants, family biz.</div>
+        </div>
+        <div class="choice vibe-card" onclick="selectChoice(this,'vibe')">
+          <div class="choice-check">✓</div>
+          <div class="vibe-swatch" style="background:linear-gradient(135deg,#FF3D8B,#FFD700,#00D4B4);"></div>
+          <div class="choice-label">Playful & Colorful</div>
+          <div class="choice-desc">Fun, energetic, vibrant. Perfect for events, kids, entertainment.</div>
+        </div>
+        <div class="choice vibe-card" onclick="selectChoice(this,'vibe')">
+          <div class="choice-check">✓</div>
+          <div class="vibe-swatch" style="background:linear-gradient(135deg,#F5F5F0,#2D3A2E,#4A7C59);"></div>
+          <div class="choice-label">Natural & Organic</div>
+          <div class="choice-desc">Earthy, calm, sustainable. Great for wellness, food, outdoors.</div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-back" onclick="prevStep()">← Back</button>
+        <button class="btn-next" onclick="nextStep()">Next →</button>
+      </div>
+    </div>
+
+    <!-- ─── STEP 3: Colors ─── -->
+    <div class="step" data-step="3">
+      <div class="step-eyebrow">Step 3 — Colors</div>
+      <h2 class="step-title">Pick your <em>color palette</em>.</h2>
+      <p class="step-sub">Choose preset colors or enter your own hex codes. You can pick one or mix them.</p>
+
+      <!-- Primary -->
+      <div class="color-section">
+        <div class="color-section-label">Primary Color (main brand color)</div>
+        <div class="color-presets" id="primaryPresets">
+          <div class="color-preset" style="background:#1A7A8A" onclick="pickPreset(this,'primary','#1A7A8A')"></div>
+          <div class="color-preset" style="background:#0E2A47" onclick="pickPreset(this,'primary','#0E2A47')"></div>
+          <div class="color-preset" style="background:#8B2FC9" onclick="pickPreset(this,'primary','#8B2FC9')"></div>
+          <div class="color-preset" style="background:#FF3D8B" onclick="pickPreset(this,'primary','#FF3D8B')"></div>
+          <div class="color-preset" style="background:#D4A843" onclick="pickPreset(this,'primary','#D4A843')"></div>
+          <div class="color-preset" style="background:#00D4B4" onclick="pickPreset(this,'primary','#00D4B4')"></div>
+          <div class="color-preset" style="background:#4A7C59" onclick="pickPreset(this,'primary','#4A7C59')"></div>
+          <div class="color-preset" style="background:#E63946" onclick="pickPreset(this,'primary','#E63946')"></div>
+          <div class="color-preset" style="background:#2B4162" onclick="pickPreset(this,'primary','#2B4162')"></div>
+          <div class="color-preset" style="background:#FF6B47" onclick="pickPreset(this,'primary','#FF6B47')"></div>
+        </div>
+        <div class="color-custom-row">
+          <input type="color" class="color-picker-input" id="primaryPicker" value="#1A7A8A" oninput="customColor('primary',this.value)"/>
+          <div class="color-hex-display" id="primaryHex">#1A7A8A</div>
+          <span class="color-label-text">or enter custom hex above</span>
+        </div>
+      </div>
+
+      <!-- Accent -->
+      <div class="color-section">
+        <div class="color-section-label">Accent Color (buttons, highlights)</div>
+        <div class="color-presets" id="accentPresets">
+          <div class="color-preset" style="background:#FFD700" onclick="pickPreset(this,'accent','#FFD700')"></div>
+          <div class="color-preset" style="background:#00e5ff" onclick="pickPreset(this,'accent','#00e5ff')"></div>
+          <div class="color-preset" style="background:#b8ff57" onclick="pickPreset(this,'accent','#b8ff57')"></div>
+          <div class="color-preset" style="background:#FF3D8B" onclick="pickPreset(this,'accent','#FF3D8B')"></div>
+          <div class="color-preset" style="background:#FF6B47" onclick="pickPreset(this,'accent','#FF6B47')"></div>
+          <div class="color-preset" style="background:#ffffff" onclick="pickPreset(this,'accent','#ffffff')"></div>
+          <div class="color-preset" style="background:#A8DADC" onclick="pickPreset(this,'accent','#A8DADC')"></div>
+          <div class="color-preset" style="background:#F4A261" onclick="pickPreset(this,'accent','#F4A261')"></div>
+          <div class="color-preset" style="background:#E9C46A" onclick="pickPreset(this,'accent','#E9C46A')"></div>
+          <div class="color-preset" style="background:#8338EC" onclick="pickPreset(this,'accent','#8338EC')"></div>
+        </div>
+        <div class="color-custom-row">
+          <input type="color" class="color-picker-input" id="accentPicker" value="#FFD700" oninput="customColor('accent',this.value)"/>
+          <div class="color-hex-display" id="accentHex">#FFD700</div>
+          <span class="color-label-text">or enter custom hex above</span>
+        </div>
+      </div>
+
+      <!-- Background tone -->
+      <div class="color-section">
+        <div class="color-section-label">Background Tone</div>
+        <div class="choice-grid cols-3">
+          <div class="choice" onclick="selectChoice(this,'bgTone')" style="padding:14px 16px;gap:8px;display:flex;align-items:center;">
+            <div style="width:28px;height:28px;border-radius:6px;background:#040810;border:1px solid rgba(255,255,255,0.1);flex-shrink:0;"></div>
+            <div><div class="choice-label" style="font-size:0.82rem;">Dark</div><div class="choice-desc">Deep navy / black</div></div>
+            <div class="choice-check">✓</div>
+          </div>
+          <div class="choice" onclick="selectChoice(this,'bgTone')" style="padding:14px 16px;gap:8px;display:flex;align-items:center;">
+            <div style="width:28px;height:28px;border-radius:6px;background:#F8F4EE;border:1px solid rgba(0,0,0,0.1);flex-shrink:0;"></div>
+            <div><div class="choice-label" style="font-size:0.82rem;">Light</div><div class="choice-desc">White / cream</div></div>
+            <div class="choice-check">✓</div>
+          </div>
+          <div class="choice" onclick="selectChoice(this,'bgTone')" style="padding:14px 16px;gap:8px;display:flex;align-items:center;">
+            <div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#040810,#F8F4EE);border:1px solid rgba(255,255,255,0.1);flex-shrink:0;"></div>
+            <div><div class="choice-label" style="font-size:0.82rem;">Mixed</div><div class="choice-desc">Both sections</div></div>
+            <div class="choice-check">✓</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-back" onclick="prevStep()">← Back</button>
+        <button class="btn-next" onclick="nextStep()">Next →</button>
+      </div>
+    </div>
+
+    <!-- ─── STEP 4: Layout / Style ─── -->
+    <div class="step" data-step="4">
+      <div class="step-eyebrow">Step 4 — Layout Style</div>
+      <h2 class="step-title">How should it <em>feel</em> to browse?</h2>
+      <p class="step-sub">Layout and spacing dramatically affect how professional and trustworthy a website feels.</p>
+
+      <div class="choice-grid cols-2">
+        <div class="choice" onclick="selectChoice(this,'layout')">
+          <div class="choice-check">✓</div>
+          <span class="choice-emoji">🧱</span>
+          <div class="choice-label">Bold & Structured</div>
+          <div class="choice-desc">Strong sections, clear hierarchy, powerful headings. Commands attention.</div>
+        </div>
+        <div class="choice" onclick="selectChoice(this,'layout')">
+          <div class="choice-check">✓</div>
+          <span class="choice-emoji">🌬️</span>
+          <div class="choice-label">Clean & Spacious</div>
+          <div class="choice-desc">Lots of breathing room, minimal clutter, very modern and refined feel.</div>
+        </div>
+        <div class="choice" onclick="selectChoice(this,'layout')">
+          <div class="choice-check">✓</div>
+          <span class="choice-emoji">🖼️</span>
+          <div class="choice-label">Photo-Forward</div>
+          <div class="choice-desc">Big, immersive images everywhere. Let your work or space do the talking.</div>
+        </div>
+        <div class="choice" onclick="selectChoice(this,'layout')">
+          <div class="choice-check">✓</div>
+          <span class="choice-emoji">📋</span>
+          <div class="choice-label">Info-Dense</div>
+          <div class="choice-desc">All the details, services, and pricing visible at a glance. Nothing hidden.</div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-back" onclick="prevStep()">← Back</button>
+        <button class="btn-next" onclick="nextStep()">Next →</button>
+      </div>
+    </div>
+
+    <!-- ─── STEP 5: Pages & Features ─── -->
+    <div class="step" data-step="5">
+      <div class="step-eyebrow">Step 5 — Pages & Features</div>
+      <h2 class="step-title">What does your site <em>need</em>?</h2>
+      <p class="step-sub">Select all the pages and features you want. I'll include everything checked.</p>
+
+      <div class="field">
+        <label>Pages (select all that apply)</label>
+        <div class="chip-group" id="pagesGroup">
+          <div class="chip on" onclick="toggleChip(this)">Home</div>
+          <div class="chip on" onclick="toggleChip(this)">About Us</div>
+          <div class="chip on" onclick="toggleChip(this)">Services</div>
+          <div class="chip on" onclick="toggleChip(this)">Contact</div>
+          <div class="chip" onclick="toggleChip(this)">Gallery / Portfolio</div>
+          <div class="chip" onclick="toggleChip(this)">Pricing</div>
+          <div class="chip" onclick="toggleChip(this)">Blog</div>
+          <div class="chip" onclick="toggleChip(this)">FAQ</div>
+          <div class="chip" onclick="toggleChip(this)">Testimonials</div>
+          <div class="chip" onclick="toggleChip(this)">Team / Staff</div>
+          <div class="chip" onclick="toggleChip(this)">Menu (restaurant)</div>
+          <div class="chip" onclick="toggleChip(this)">Booking Page</div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:22px;">
+        <label>Special Features</label>
+        <div class="chip-group" id="featuresGroup">
+          <div class="chip" onclick="toggleChip(this)">Online Booking / Scheduler</div>
+          <div class="chip" onclick="toggleChip(this)">Contact Form</div>
+          <div class="chip" onclick="toggleChip(this)">Click-to-Call Button</div>
+          <div class="chip" onclick="toggleChip(this)">Google Maps Embed</div>
+          <div class="chip" onclick="toggleChip(this)">Live Chat Widget</div>
+          <div class="chip" onclick="toggleChip(this)">Photo Gallery / Slideshow</div>
+          <div class="chip" onclick="toggleChip(this)">Customer Reviews Section</div>
+          <div class="chip" onclick="toggleChip(this)">Social Media Links</div>
+          <div class="chip" onclick="toggleChip(this)">WhatsApp Button</div>
+          <div class="chip" onclick="toggleChip(this)">Newsletter Signup</div>
+          <div class="chip" onclick="toggleChip(this)">Before / After Photos</div>
+          <div class="chip" onclick="toggleChip(this)">Video Background / Hero</div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-back" onclick="prevStep()">← Back</button>
+        <button class="btn-next" onclick="nextStep()">Next →</button>
+      </div>
+    </div>
+
+    <!-- ─── STEP 6: Typography ─── -->
+    <div class="step" data-step="6">
+      <div class="step-eyebrow">Step 6 — Typography</div>
+      <h2 class="step-title">How should your text <em>look</em>?</h2>
+      <p class="step-sub">Font choice alone changes how a brand feels. Pick what feels right for you.</p>
+
+      <div class="choice-grid cols-2">
+        <div class="choice" onclick="selectChoice(this,'fontStyle')">
+          <div class="choice-check">✓</div>
+          <div style="font-family:serif;font-size:1.4rem;font-weight:700;margin-bottom:8px;color:var(--white)">Serif Elegance</div>
+          <div class="choice-desc">Traditional, trustworthy, luxury feel. Think Playfair Display, Cormorant.</div>
+        </div>
+        <div class="choice" onclick="selectChoice(this,'fontStyle')">
+          <div class="choice-check">✓</div>
+          <div style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:8px;color:var(--white)">BOLD SANS</div>
+          <div class="choice-desc">Strong, modern, and powerful. Think Syne, Bebas Neue.</div>
+        </div>
+        <div class="choice" onclick="selectChoice(this,'fontStyle')">
+          <div class="choice-check">✓</div>
+          <div style="font-family:'Outfit',sans-serif;font-size:1.4rem;font-weight:500;margin-bottom:8px;color:var(--white)">Clean & Minimal</div>
+          <div class="choice-desc">Simple, readable, tech-forward. Think Outfit, Inter, DM Sans.</div>
+        </div>
+        <div class="choice" onclick="selectChoice(this,'fontStyle')">
+          <div class="choice-check">✓</div>
+          <div style="font-family:cursive;font-size:1.4rem;font-weight:600;margin-bottom:8px;color:var(--white)">Friendly & Round</div>
+          <div class="choice-desc">Warm, playful, approachable. Think Nunito, Poppins, Pacifico.</div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:28px;">
+        <label>Font Size Preference</label>
+        <div class="range-wrap">
+          <div class="range-labels"><span>Compact</span><span>Balanced</span><span>Large & Bold</span></div>
+          <input type="range" id="fontSizeRange" min="1" max="3" value="2" step="1" oninput="updateRange(this,'fontSizeVal','fontSize',['Compact','Balanced','Large & Bold'])"/>
+          <div class="range-value" id="fontSizeVal">Balanced</div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-back" onclick="prevStep()">← Back</button>
+        <button class="btn-next" onclick="nextStep()">Next →</button>
+      </div>
+    </div>
+
+    <!-- ─── STEP 7: Budget & Timeline ─── -->
+    <div class="step" data-step="7">
+      <div class="step-eyebrow">Step 7 — Budget & Timeline</div>
+      <h2 class="step-title">When do you need it, and <em>what's your budget</em>?</h2>
+      <p class="step-sub">I deliver fast — most sites are live within 3–5 days. Let me know what works for you.</p>
+
+      <div class="choice-grid cols-2" style="margin-bottom:24px;">
+        <div class="choice" onclick="selectChoice(this,'budget')">
+          <div class="choice-check">✓</div>
+          <span class="choice-emoji">🌱</span>
+          <div class="choice-label">$150 – $250</div>
+          <div class="choice-desc">Single-page starter site. Clean, fast, professional. Perfect to get online.</div>
+        </div>
+        <div class="choice" onclick="selectChoice(this,'budget')">
+          <div class="choice-check">✓</div>
+          <span class="choice-emoji">⚡</span>
+          <div class="choice-label">$250 – $400</div>
+          <div class="choice-desc">Full multi-page site with all the bells and whistles. Most popular option.</div>
+        </div>
+        <div class="choice" onclick="selectChoice(this,'budget')">
+          <div class="choice-check">✓</div>
+          <span class="choice-emoji">💎</span>
+          <div class="choice-label">$400 – $600</div>
+          <div class="choice-desc">Premium custom design with advanced features, animations, and SEO setup.</div>
+        </div>
+        <div class="choice" onclick="selectChoice(this,'budget')">
+          <div class="choice-check">✓</div>
+          <span class="choice-emoji">🚀</span>
+          <div class="choice-label">$600+</div>
+          <div class="choice-desc">Complex build — e-commerce, custom integrations, or large site. Let's talk.</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>How fast do you need it?</label>
+        <div class="chip-group" id="timelineGroup">
+          <div class="chip" onclick="toggleChip(this,'timelineGroup')">ASAP (1–3 days)</div>
+          <div class="chip on" onclick="toggleChip(this,'timelineGroup')">Standard (3–5 days)</div>
+          <div class="chip" onclick="toggleChip(this,'timelineGroup')">Flexible (1–2 weeks)</div>
+          <div class="chip" onclick="toggleChip(this,'timelineGroup')">No rush</div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:18px;">
+        <label>Preferred Contact Method</label>
+        <div class="chip-group" id="contactGroup">
+          <div class="chip on" onclick="toggleChip(this,'contactGroup')">WhatsApp</div>
+          <div class="chip" onclick="toggleChip(this,'contactGroup')">Email</div>
+          <div class="chip" onclick="toggleChip(this,'contactGroup')">Either is fine</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-back" onclick="prevStep()">← Back</button>
+        <button class="btn-next" onclick="nextStep()">Next →</button>
+      </div>
+    </div>
+
+    <!-- ─── STEP 8: Final Notes & Submit ─── -->
+    <div class="step" data-step="8">
+      <div class="step-eyebrow">Step 8 — Final Details</div>
+      <h2 class="step-title">Anything else I should <em>know</em>?</h2>
+      <p class="step-sub">Add any references, inspirations, or special requests. Then review your brief and send it.</p>
+
+      <div class="field">
+        <label>Website Inspiration (links or descriptions)</label>
+        <input type="text" id="inspo" placeholder="e.g. I love how apple.com looks, or www.example.com"/>
+      </div>
+      <div class="field">
+        <label>Your Contact — Email or Phone</label>
+        <input type="text" id="contactInfo" placeholder="e.g. you@email.com or +1 555 000 0000"/>
+      </div>
+      <div class="field">
+        <label>Anything else you want me to know?</label>
+        <textarea id="extraNotes" placeholder="Special requests, must-haves, things you hate on websites, your tagline — anything goes."></textarea>
+      </div>
+
+      <!-- SUMMARY -->
+      <div style="margin-top:28px;margin-bottom:8px;">
+        <div class="step-eyebrow" style="margin-bottom:14px;">Your Brief Summary</div>
+        <div class="summary-grid" id="summaryGrid"></div>
+      </div>
+
+      <button class="submit-btn" onclick="submitBrief()">Send My Brief → Get a Quote 🚀</button>
+
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn-back" onclick="prevStep()">← Back</button>
+      </div>
+    </div>
+
+    <!-- ─── DONE ─── -->
+    <div class="done-screen" id="doneScreen">
+      <div class="done-icon">🚀</div>
+      <h2>Brief <em>Sent!</em></h2>
+      <p>Your project brief is on its way. I'll review everything and get back to you within a few hours — usually less. Check your WhatsApp or email!</p>
+      <a href="https://wa.me/8801779264624" target="_blank" style="display:inline-block;background:var(--cyan);color:var(--bg);padding:14px 32px;border-radius:8px;font-weight:700;font-size:0.84rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;margin-top:8px;">Open WhatsApp →</a>
+    </div>
+
+  </div><!-- /card -->
+</div><!-- /wrapper -->
+
+<script>
+  // ── STATE ──
+  const state = {
+    step: 1,
+    totalSteps: 8,
+    vibe: '', layout: '', bgTone: '', fontStyle: '', budget: '', fontSize: 'Balanced',
+    primaryColor: '#1A7A8A', accentColor: '#FFD700',
+  };
+
+  // ── PROGRESS ──
+  function renderProgress() {
+    const wrap = document.getElementById('progressSteps');
+    wrap.innerHTML = '';
+    for (let i = 1; i <= state.totalSteps; i++) {
+      const d = document.createElement('div');
+      d.className = 'progress-step' + (i < state.step ? ' done' : i === state.step ? ' active' : '');
+      wrap.appendChild(d);
+    }
+    document.getElementById('stepCounter').textContent = state.step;
+  }
+
+  // ── NAVIGATION ──
+  function showStep(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    const target = document.querySelector(`.step[data-step="${n}"]`);
+    if (target) { target.classList.add('active'); }
+    if (n === 8) buildSummary();
+    renderProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function nextStep() {
+    if (state.step < state.totalSteps) { state.step++; showStep(state.step); }
+  }
+  function prevStep() {
+    if (state.step > 1) { state.step--; showStep(state.step); }
+  }
+
+  // ── SINGLE-SELECT CHOICES ──
+  function selectChoice(el, key) {
+    el.closest('.choice-grid, .color-section').querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    state[key] = el.querySelector('.choice-label')?.textContent || el.querySelector('[style*="font-family"]')?.textContent || '';
+  }
+
+  // ── TOGGLE CHIPS (multi-select) ──
+  function toggleChip(el) { el.classList.toggle('on'); }
+
+  // ── COLOR PRESETS ──
+  function pickPreset(el, which, hex) {
+    el.closest('.color-presets').querySelectorAll('.color-preset').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById(which + 'Hex').textContent = hex.toUpperCase();
+    document.getElementById(which + 'Picker').value = hex;
+    state[which + 'Color'] = hex;
+  }
+
+  function customColor(which, hex) {
+    document.getElementById(which + 'Hex').textContent = hex.toUpperCase();
+    state[which + 'Color'] = hex;
+    document.querySelectorAll(`#${which}Presets .color-preset`).forEach(p => p.classList.remove('selected'));
+  }
+
+  // ── RANGE SLIDER ──
+  function updateRange(el, valId, stateKey, labels) {
+    const v = parseInt(el.value) - 1;
+    const label = labels[v];
+    document.getElementById(valId).textContent = label;
+    state[stateKey] = label;
+    const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+    el.style.setProperty('--val', pct + '%');
+  }
+
+  // ── SUMMARY ──
+  function getChips(groupId) {
+    const chips = document.querySelectorAll(`#${groupId} .chip.on`);
+    return [...chips].map(c => c.textContent.trim()).join(', ') || 'None selected';
+  }
+
+  function buildSummary() {
+    const items = [
+      { key: 'Business',    val: (document.getElementById('bizName')?.value || '—') + ', ' + (document.getElementById('bizType')?.value || '—') },
+      { key: 'Location',    val: document.getElementById('bizLocation')?.value || '—' },
+      { key: 'Vibe',        val: state.vibe || '—' },
+      { key: 'Layout',      val: state.layout || '—' },
+      { key: 'Background',  val: state.bgTone || '—' },
+      { key: 'Primary Color', val: `<span class="summary-color-dot" style="background:${state.primaryColor}"></span>${state.primaryColor}` },
+      { key: 'Accent Color',  val: `<span class="summary-color-dot" style="background:${state.accentColor}"></span>${state.accentColor}` },
+      { key: 'Typography',  val: state.fontStyle || '—' },
+      { key: 'Font Size',   val: state.fontSize || 'Balanced' },
+      { key: 'Budget',      val: state.budget || '—' },
+      { key: 'Pages',       val: getChips('pagesGroup') },
+      { key: 'Features',    val: getChips('featuresGroup') },
+    ];
+    const grid = document.getElementById('summaryGrid');
+    grid.innerHTML = items.map(i => `
+      <div class="summary-item">
+        <div class="summary-key">${i.key}</div>
+        <div class="summary-val">${i.val}</div>
+      </div>`).join('');
+  }
+
+  // ── SUBMIT ──
+  function submitBrief() {
+    const name     = document.getElementById('clientName')?.value || '';
+    const biz      = document.getElementById('bizName')?.value || '';
+    const bizType  = document.getElementById('bizType')?.value || '';
+    const location = document.getElementById('bizLocation')?.value || '';
+    const existing = document.getElementById('existingSite')?.value || '';
+    const inspo    = document.getElementById('inspo')?.value || '';
+    const contact  = document.getElementById('contactInfo')?.value || '';
+    const notes    = document.getElementById('extraNotes')?.value || '';
+
+    const msg =
+`🎨 NEW WEBSITE BRIEF
+
+👤 Client: ${name}
+🏢 Business: ${biz} (${bizType})
+📍 Location: ${location}
+🌐 Existing Site: ${existing || 'None'}
+
+🎨 DESIGN PREFERENCES
+Vibe: ${state.vibe || '—'}
+Layout: ${state.layout || '—'}
+Background: ${state.bgTone || '—'}
+Primary Color: ${state.primaryColor}
+Accent Color: ${state.accentColor}
+Typography: ${state.fontStyle || '—'}
+Font Size: ${state.fontSize}
+
+📄 PAGES: ${getChips('pagesGroup')}
+⚙️ FEATURES: ${getChips('featuresGroup')}
+
+💰 Budget: ${state.budget || '—'}
+⏱ Timeline: ${getChips('timelineGroup')}
+📬 Contact Pref: ${getChips('contactGroup')}
+
+💡 Inspiration: ${inspo || '—'}
+📞 Their Contact: ${contact}
+📝 Notes: ${notes || '—'}`;
+
+    const waUrl = `https://wa.me/8801779264624?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, '_blank');
+
+    // Also open email as fallback
+    const mailUrl = `mailto:thingstoknow365@gmail.com?subject=Website%20Brief%20-%20${encodeURIComponent(biz)}&body=${encodeURIComponent(msg)}`;
+
+    // Show done screen
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('doneScreen').classList.add('show');
+    renderProgress();
+  }
+
+  // init
+  renderProgress();
+</script>
+</body>
+</html>
